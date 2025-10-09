@@ -1,0 +1,128 @@
+# Node class to represent each term of the polynomial
+class Node:
+    def __init__(self, coeff, expo):
+        self.coeff = coeff     # coefficient
+        self.expo = expo       # exponent
+        self.link = None       # pointer to next term
+
+
+# Polynomial class to manage linked list operations
+class Polynomial:
+    def __init__(self):
+        self.start = None  # start (head) of the linked list
+
+    # Insert a new term in descending order of exponents
+    def insert_term(self, coeff, expo):
+        new_node = Node(coeff, expo)
+
+        # If list is empty or exponent is largest
+        if self.start is None or self.start.expo < expo:
+            new_node.link = self.start
+            self.start = new_node
+        else:
+            current = self.start
+            # Find position to insert new term
+            while current.link is not None and current.link.expo > expo:
+                current = current.link
+
+            # If exponent already exists, add coefficients
+            if current.expo == expo:
+                current.coeff += coeff
+            else:
+                new_node.link = current.link
+                current.link = new_node
+
+    # Create polynomial from a list of (coefficient, exponent) pairs
+    def create_polynomial(self, terms):
+        for coeff, expo in terms:
+            self.insert_term(coeff, expo)
+
+    # Add two polynomials and return result as a new Polynomial
+    def add_polynomials(self, other):
+        result = Polynomial()
+        ptr1 = self.start
+        ptr2 = other.start
+
+        # Traverse both polynomials
+        while ptr1 is not None and ptr2 is not None:
+            if ptr1.expo > ptr2.expo:
+                result.insert_term(ptr1.coeff, ptr1.expo)
+                ptr1 = ptr1.link
+            elif ptr1.expo < ptr2.expo:
+                result.insert_term(ptr2.coeff, ptr2.expo)
+                ptr2 = ptr2.link
+            else:
+                sum_coeff = ptr1.coeff + ptr2.coeff
+                if sum_coeff != 0:
+                    result.insert_term(sum_coeff, ptr1.expo)
+                ptr1 = ptr1.link
+                ptr2 = ptr2.link
+
+        # Add remaining terms from first polynomial
+        while ptr1 is not None:
+            result.insert_term(ptr1.coeff, ptr1.expo)
+            ptr1 = ptr1.link
+
+        # Add remaining terms from second polynomial
+        while ptr2 is not None:
+            result.insert_term(ptr2.coeff, ptr2.expo)
+            ptr2 = ptr2.link
+
+        return result
+
+    # Display polynomial in readable form
+    def display(self):
+        if self.start is None:
+            print("0")
+            return
+
+        current = self.start
+        terms = []
+
+        while current is not None:
+            coeff = current.coeff
+            expo = current.expo
+
+            # Skip zero coefficients
+            if coeff != 0:
+                if expo == 0:
+                    term = f"{coeff}"
+                elif expo == 1:
+                    term = f"{coeff}x"
+                else:
+                    term = f"{coeff}x^{expo}"
+                terms.append(term)
+            current = current.link
+
+        poly_str = " + ".join(terms)
+        poly_str = poly_str.replace("+ -", "- ")
+        print(poly_str)
+
+
+# ---------- MAIN FUNCTION ----------
+def main():
+    # Create first polynomial
+    poly1 = Polynomial()
+    poly1.create_polynomial([(3, 3), (2, 2), (5, 1), (1, 0)])  # 3x³ + 2x² + 5x + 1
+
+    # Create second polynomial
+    poly2 = Polynomial()
+    poly2.create_polynomial([(4, 3), (3, 2), (2, 1), (7, 0)])  # 4x³ + 3x² + 2x + 7
+
+    # Display input polynomials
+    print("Polynomial 1: ", end="")
+    poly1.display()
+    print("Polynomial 2: ", end="")
+    poly2.display()
+
+    # Perform addition
+    result = poly1.add_polynomials(poly2)
+
+    # Display result
+    print("Result (Poly1 + Poly2): ", end="")
+    result.display()
+
+
+# Run main
+if __name__ == "__main__":
+    main()
