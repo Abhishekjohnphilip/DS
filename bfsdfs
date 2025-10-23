@@ -1,0 +1,152 @@
+class Queue:
+    def __init__(self, size):
+        self.items = [None] * size
+        self.front = 0
+        self.rear = -1
+        self.count = 0
+        self.size = size
+
+    def enqueue(self, item):
+        if self.count == self.size:
+            return
+        self.rear = (self.rear + 1) % self.size
+        self.items[self.rear] = item
+        self.count += 1
+
+    def dequeue(self):
+        if self.count == 0:
+            return None
+        item = self.items[self.front]
+        self.front = (self.front + 1) % self.size
+        self.count -= 1
+        return item
+
+    def is_empty(self):
+        return self.count == 0
+
+
+class Stack:
+    def __init__(self, size):
+        self.items = []
+        self.size = size
+
+    def push(self, item):
+        if len(self.items) < self.size:
+            self.items.append(item)
+
+    def pop(self):
+        if not self.is_empty():
+            return self.items.pop()
+        return None
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+
+class Graph:
+    def __init__(self):
+        self.vertices = []
+        self.adj_matrix = []
+
+    def add_vertex(self, vertex):
+        if vertex not in self.vertices:
+            self.vertices.append(vertex)
+            for row in self.adj_matrix:
+                row.append(0)
+            self.adj_matrix.append([0] * len(self.vertices))
+
+    def add_edge(self, u, v):
+        self.add_vertex(u)
+        self.add_vertex(v)
+        i = self.vertices.index(u)
+        j = self.vertices.index(v)
+        self.adj_matrix[i][j] = 1
+        self.adj_matrix[j][i] = 1
+
+    def display(self):
+        print("\n--- Adjacency Matrix ---")
+        print("   ", "  ".join(self.vertices))
+        for i in range(len(self.vertices)):
+            print(self.vertices[i], " ", "  ".join(map(str, self.adj_matrix[i])))
+
+    def bfs(self, start):
+        n = len(self.vertices)
+        STATUS = [1] * n
+        traversal_order = []
+        QUEUE = Queue(n)
+
+        if start not in self.vertices:
+            print(f"Start vertex '{start}' not found in the graph.")
+            return traversal_order
+
+        start_index = self.vertices.index(start)
+        QUEUE.enqueue(start_index)
+        STATUS[start_index] = 2
+
+        while not QUEUE.is_empty():
+            N = QUEUE.dequeue()
+            traversal_order.append(self.vertices[N])
+            STATUS[N] = 3
+
+            for i in range(n):
+                if self.adj_matrix[N][i] == 1 and STATUS[i] == 1:
+                    QUEUE.enqueue(i)
+                    STATUS[i] = 2
+
+        return traversal_order
+
+    def dfs(self, start):
+        n = len(self.vertices)
+        STATUS = [1] * n
+        traversal_order = []
+        STACK = Stack(n)
+
+        if start not in self.vertices:
+            print(f"Start vertex '{start}' not found in the graph.")
+            return traversal_order
+
+        start_index = self.vertices.index(start)
+        STACK.push(start_index)
+        STATUS[start_index] = 2
+
+        while not STACK.is_empty():
+            N = STACK.pop()
+            traversal_order.append(self.vertices[N])
+            STATUS[N] = 3
+
+            for i in range(n - 1, -1, -1):
+                if self.adj_matrix[N][i] == 1 and STATUS[i] == 1:
+                    STACK.push(i)
+                    STATUS[i] = 2
+
+        return traversal_order
+
+
+def main():
+    g = Graph()
+
+    n_vertices = int(input("Enter number of vertices: "))
+    print("Enter vertices:")
+    for _ in range(n_vertices):
+        vertex = input().strip()
+        g.add_vertex(vertex)
+
+    n_edges = int(input("Enter number of edges: "))
+    print("Enter edges (format: vertex1 vertex2):")
+    for _ in range(n_edges):
+        edge_input = input().split()
+        while len(edge_input) != 2:
+            print("Invalid input. Please enter two vertex names separated by a space.")
+            edge_input = input().split()
+        u, v = edge_input
+        g.add_edge(u, v)
+
+    g.display()
+
+    start_vertex = input("Enter start vertex for BFS and DFS: ").strip()
+    print("BFS Traversal:", g.bfs(start_vertex))
+    print("DFS Traversal:", g.dfs(start_vertex))
+
+
+if __name__ == "__main__":
+    main()
